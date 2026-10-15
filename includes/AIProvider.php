@@ -128,7 +128,11 @@ PROMPT;
             throw new ProviderException('The AI provider rejected the API key.', ProviderException::AUTH, 502);
         }
         if ($status === 429) {
-            throw new ProviderException('The AI provider is busy. Please try again shortly.', ProviderException::API, 429);
+            throw new ProviderException(
+                'The AI provider quota or rate limit has been reached. Check your provider quota and try again later.',
+                ProviderException::API,
+                429
+            );
         }
         throw new ProviderException("The AI provider returned an error (HTTP $status).", ProviderException::API, 502);
     }

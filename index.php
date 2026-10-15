@@ -85,12 +85,14 @@ page_headers();
 
     <footer class="controls">
         <p class="status" id="status" role="status" aria-live="polite">Point camera at an object</p>
+        <button type="button" class="btn-secondary" id="speakNameBtn" disabled>Speak item name</button>
         <button type="button" class="scan-btn" id="scanBtn" disabled>SCAN</button>
     </footer>
 
 </main>
 
 <script src="assets/js/camera.js"></script>
+<script src="assets/js/voice.js"></script>
 <script src="assets/js/ar-overlay.js"></script>
 <script src="assets/js/scanner.js"></script>
 </body>

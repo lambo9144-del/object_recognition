@@ -23,6 +23,7 @@ The scan result always comes from a real AI call. There is no demo data: if no p
 - Strict prompt: reads visible text, never invents a model number, returns a generic name when unsure
 - All AI output is validated and cleaned (bounding box 0-1000, confidence 0-1, text sanitised)
 - AR detection box + expandable info card (tap for details)
+- Speaks the recognized item name after a scan, with a manual **Speak item name** button
 - Real progress stages (no fake percentage)
 - Admin settings page with Test Connection and a QR code to open the scanner on a phone
 - Optional MySQL scan history with search, pagination, delete and clear
@@ -31,6 +32,8 @@ The scan result always comes from a real AI call. There is no demo data: if no p
 ## 3. Technology Stack
 
 PHP 8.3+, MySQL 8+ (optional), PDO, cURL, HTML5, CSS3, vanilla JavaScript (MediaDevices, Canvas, Fetch). The only external resources are Google Fonts and the QR code library (cdnjs) used on the settings page.
+
+Item-name speech uses the browser's built-in SpeechSynthesis API and depends on browser/device voice support and audio settings.
 
 ## 4. Requirements
 
@@ -136,6 +139,7 @@ Check on Android Chrome, iPhone Safari, and desktop Chrome/Edge.
 | "Please use HTTPS to access the camera." | Use HTTPS or `localhost` (section 7) |
 | "AI provider is not configured." | Add a key in Settings (and the base URL for Agnes) |
 | "The AI provider rejected its API key." | Re-enter the key and click Save |
+| "The AI provider quota or rate limit has been reached." | Check the provider's quota/billing page, wait for its quota window to reset, or configure another provider |
 | Model not found in Test Connection | Change the model name in Settings |
 | "Could not save" on Settings | Make `storage/` writable |
 | Box looks slightly off the object | AI boxes are approximate; the image is frozen after capture so it stays aligned with what was scanned |

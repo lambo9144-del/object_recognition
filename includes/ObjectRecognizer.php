@@ -53,6 +53,9 @@ final class ObjectRecognizer
         }
 
         if ($lastError !== null) {
+            if ($lastError->httpStatus() === 429) {
+                throw $lastError;
+            }
             match ($lastError->kind()) {
                 ProviderException::TIMEOUT => throw new ProviderException('The AI service took too long. Please try again.', ProviderException::TIMEOUT, 504),
                 ProviderException::AUTH => throw new ProviderException('The AI provider rejected its API key. Please check Settings.', ProviderException::AUTH, 502),

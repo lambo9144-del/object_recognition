@@ -26,7 +26,8 @@ final class GeminiVision extends AIProvider
             throw new ProviderException('Gemini is not configured.', ProviderException::CONFIG, 503);
         }
 
-        $models = $this->modelsToTry('gemini_model', 'gemini_fallback_models');
+        // Use only the active model to prevent 404 fallback errors
+        $models = ['gemini-3.8-flash'];
         $payload = [
             'contents' => [[
                 'parts' => [
@@ -45,7 +46,8 @@ final class GeminiVision extends AIProvider
                 'POST',
                 self::BASE . rawurlencode($model) . ':generateContent',
                 ['x-goog-api-key: ' . $this->key()],
-                $payload
+                $payload,
+                60 // Increased timeout to 60s
             );
             if ($response['status'] < 200 || $response['status'] >= 300) {
                 $this->failFromStatus($response['status'], $response['body']);
@@ -69,10 +71,9 @@ final class GeminiVision extends AIProvider
         if (!$this->isConfigured()) {
             return ['ok' => false, 'message' => 'Not configured'];
         }
-        $model = trim((string) ($this->config['gemini_model'] ?? ''));
-        if ($model === '') {
-            return ['ok' => false, 'message' => 'No Gemini model is set'];
-        }
+
+        $model = 'gemini-3.8-flash';
+
         try {
             $response = $this->request('GET', self::BASE . rawurlencode($model), ['x-goog-api-key: ' . $this->key()], null, 15);
         } catch (ProviderException $e) {
@@ -82,6 +83,7 @@ final class GeminiVision extends AIProvider
             $response['status'] >= 200 && $response['status'] < 300 => ['ok' => true, 'message' => 'Connected'],
             $response['status'] === 400 || $response['status'] === 401 || $response['status'] === 403 => ['ok' => false, 'message' => 'The API key was rejected'],
             $response['status'] === 404 => ['ok' => false, 'message' => 'Model not found: check the model name'],
+            $response['status'] === 503 => ['ok' => false, 'message' => 'Model experiencing high demand (503)'],
             default => ['ok' => false, 'message' => 'Connection failed (HTTP ' . $response['status'] . ')'],
         };
     }

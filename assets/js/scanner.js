@@ -18,6 +18,7 @@
         focusRing: document.getElementById('focusRing'),
         status: document.getElementById('status'),
         scanBtn: document.getElementById('scanBtn'),
+        speakNameBtn: document.getElementById('speakNameBtn'),
         progress: document.getElementById('progress'),
         progressSteps: document.querySelectorAll('#progressSteps li'),
         cameraMessage: document.getElementById('cameraMessage'),
@@ -28,6 +29,7 @@
 
     // 'starting' | 'ready' | 'busy' | 'result' | 'no-camera'
     let state = 'starting';
+    let latestProductName = '';
 
     CameraController.init(els.video);
     AROverlay.init();
@@ -153,6 +155,7 @@
             return failScan(describeFailure(null, recognizeResponse));
         }
         const result = recognizeResponse.payload.data;
+        latestProductName = typeof result.productName === 'string' ? result.productName : '';
 
         // 3. optional web lookup (never fatal)
         let reference = null;
@@ -176,6 +179,10 @@
         // 4. display
         setStep('display');
         AROverlay.show(result, reference);
+        els.speakNameBtn.disabled = !latestProductName || !VoiceController.supported;
+        if (latestProductName) {
+            VoiceController.speakName(latestProductName);
+        }
         showProgress(false);
         state = 'result';
         setStatus('Object identified', 'success');
@@ -192,6 +199,8 @@
 
     async function scanAgain() {
         AROverlay.clear();
+        latestProductName = '';
+        els.speakNameBtn.disabled = true;
         await CameraController.unfreeze();
         state = 'ready';
         setStatus('Point camera at an object');
@@ -209,6 +218,11 @@
     });
 
     els.retryCamera.addEventListener('click', startCamera);
+    els.speakNameBtn.addEventListener('click', () => {
+        if (!VoiceController.speakName(latestProductName) && !VoiceController.supported) {
+            setStatus('Speech is not supported by this browser.', 'error');
+        }
+    });
 
     // Tap to focus (only while the live preview is running)
     els.stage.addEventListener('click', (event) => {
